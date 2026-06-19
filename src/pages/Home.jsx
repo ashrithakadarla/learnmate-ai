@@ -37,7 +37,7 @@ function Home() {
             <span className="home-logo__mark" aria-hidden="true">
               ✦
             </span>
-            AI Study Buddy
+            LearnMate AI – An Adaptive Tutor for Personalized Exam Preparation
           </Link>
           <nav className="home-nav" aria-label="Main">
             <a href="#features">Features</a>

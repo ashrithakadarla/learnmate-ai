@@ -1,23 +1,31 @@
 import { useState } from 'react'
+import { fetchStudyPlan } from '../services/studyPlanService'
 import './StudyPlan.css'
-
-const SAMPLE_PLAN = [
-  'Day 1: Introduction and Basics',
-  'Day 2: Core Concepts',
-  'Day 3: Practice Problems',
-  'Day 4: Advanced Topics',
-  'Day 5: Revision and Mock Test',
-]
 
 function StudyPlan() {
   const [subject, setSubject] = useState('')
   const [examDate, setExamDate] = useState('')
   const [hoursPerDay, setHoursPerDay] = useState('')
   const [plan, setPlan] = useState(null)
+  const [error, setError] = useState('')
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
-    setPlan(SAMPLE_PLAN)
+    setError('')
+
+    const result = await fetchStudyPlan({
+      subject,
+      examDate,
+      hoursPerDay: Number(hoursPerDay),
+    })
+
+    if (!result.success) {
+      setPlan(null)
+      setError(result.error)
+      return
+    }
+
+    setPlan(result.plan)
   }
 
   return (
@@ -74,6 +82,12 @@ function StudyPlan() {
                 />
               </div>
 
+              {error && (
+                <p className="study-plan__error" role="alert">
+                  {error}
+                </p>
+              )}
+
               <button type="submit" className="study-plan__button">
                 Generate Plan
               </button>
@@ -88,18 +102,26 @@ function StudyPlan() {
               <h2 className="study-plan__result-title">
                 📅 Personalized Study Plan
               </h2>
-              {subject && (
-                <p className="study-plan__result-meta">
-                  <span>{subject}</span>
-                  {examDate && <span>Exam: {examDate}</span>}
-                  {hoursPerDay && <span>{hoursPerDay} hrs/day</span>}
-                </p>
-              )}
+              <p className="study-plan__result-meta">
+                <span>{plan.subject}</span>
+                <span>Exam: {plan.examDate}</span>
+                <span>{plan.hoursPerDay} hrs/day</span>
+                <span>{plan.daysRemaining} days left</span>
+                <span>{plan.totalStudyHours} total hrs</span>
+              </p>
               <ol className="study-plan__days">
-                {plan.map((day, index) => (
-                  <li key={day} className="study-plan__day">
-                    <span className="study-plan__day-number">{index + 1}</span>
-                    <span className="study-plan__day-text">{day}</span>
+                {plan.days.map((day) => (
+                  <li key={day.dayNumber} className="study-plan__day">
+                    <span className="study-plan__day-number">
+                      {day.dayNumber}
+                    </span>
+                    <div className="study-plan__day-content">
+                      <span className="study-plan__day-label">{day.label}</span>
+                      <span className="study-plan__day-text">{day.topic}</span>
+                      <span className="study-plan__day-hours">
+                        {day.hours} {day.hours === 1 ? 'hour' : 'hours'} planned
+                      </span>
+                    </div>
                   </li>
                 ))}
               </ol>

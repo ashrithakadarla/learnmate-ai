@@ -176,6 +176,24 @@
   outline-offset: 3px;
 }
 
+.study-plan__error {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #b91c1c;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+@media (prefers-color-scheme: dark) {
+  .study-plan__error {
+    color: #fca5a5;
+  }
+}
+
 /* Result */
 
 .study-plan__result-card {
@@ -229,7 +247,7 @@
 
 .study-plan__day {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   padding: 1rem 1.125rem;
   border-radius: 12px;
@@ -257,9 +275,30 @@
 }
 
 .study-plan__day-text {
+  display: block;
   font-size: 1rem;
   font-weight: 500;
   color: var(--sp-heading);
+}
+
+.study-plan__day-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.study-plan__day-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sp-accent);
+}
+
+.study-plan__day-hours {
+  font-size: 0.85rem;
+  color: var(--sp-text);
 }
 
 /* Responsive */
