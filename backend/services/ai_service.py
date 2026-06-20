@@ -48,7 +48,7 @@ def generate_quiz(subject):
 def generate_study_plan(subject):
 
     prompt = f"""
-    Create a 7-day study plan for {subject}.
+    Create a detailed 7-day study plan for {subject}.
 
     Return ONLY valid JSON.
 
@@ -57,6 +57,7 @@ def generate_study_plan(subject):
         {{
           "day":1,
           "topic":"..."
+          "goal":"..."
         }}
       ]
     }}
@@ -68,9 +69,13 @@ def generate_study_plan(subject):
     )
 
     text = response.text
-
     text = text.replace("```json", "")
     text = text.replace("```", "")
     text = text.strip()
 
-    return json.loads(text)
+    try:
+        return json.loads(text)
+    except Exception as e:
+        print("Study Plan JSON Error:", e)
+        print(text)
+        return {"plan": []}
