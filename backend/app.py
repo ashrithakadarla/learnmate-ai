@@ -4,10 +4,23 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/")
-def home():
+@app.route("/generate-quiz")
+def generate_quiz():
     return jsonify({
-        "message": "AI Study Buddy Backend Running"
+        "questions": [
+            {
+                "question": "What is Java?",
+                "options": ["Language", "OS", "DB", "Browser"],
+                "answer": "Language",
+                "explanation": "Java is a Programming Language"
+            },
+            {
+                "question": "What is JVM?",
+                "options": ["Compiler", "Virtual Machine", "Editor", "OS"],
+                "answer": "Virtual Machine",
+                "explanation": "JVM executes Java bytecode."
+            }
+        ]
     })
 
 if __name__ == "__main__":
