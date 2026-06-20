@@ -127,7 +127,9 @@ function StudyPlan() {
                 ))}
               </ol>
 
-              <Link to="/quiz">
+              <Link to="/quiz" state={{
+                subject:plan.subject
+              }}>
                 <button className="study-plan__quiz-btn">Start Quiz</button>
               </Link>
               
