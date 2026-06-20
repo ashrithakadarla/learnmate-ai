@@ -1,45 +1,20 @@
-from flask import Flask, jsonify
+from flask import Flask
 from flask_cors import CORS
+
+from routes.quiz import quiz_bp
+from routes.study_plan import study_plan_bp
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/generate-quiz")
-def generate_quiz():
-    return jsonify({
-        "questions": [
-            {
-                "question": "What is Java?",
-                "options": ["Language", "OS", "DB", "Browser"],
-                "answer": "Language",
-                "explanation": "Java is a Programming Language"
-            },
-            {
-                "question": "What is JVM?",
-                "options": ["Compiler", "Virtual Machine", "Editor", "OS"],
-                "answer": "Virtual Machine",
-                "explanation": "JVM executes Java bytecode."
-            }
-        ]
-    })
-@app.route("/generate-study-plan")
-def generate_study_plan():
-    return jsonify({
-        "plan": [
-            {
-                "day": 1,
-                "topic": "Java Basics"
-            },
-            {
-                "day": 2,
-                "topic": "OOP Concepts"
-            },
-            {
-                "day": 3,
-                "topic": "Collections"
-            }
-        ]
-    })
+app.register_blueprint(quiz_bp)
+app.register_blueprint(study_plan_bp)
+
+@app.route("/")
+def home():
+    return {
+        "message": "AI Study Buddy Backend Running"
+    }
 
 if __name__ == "__main__":
     app.run(debug=True)
