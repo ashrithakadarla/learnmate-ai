@@ -33,49 +33,84 @@ def generate_quiz(subject):
     }}
     """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
-    )
+    try:
 
-    text = response.text
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
 
-    text = text.replace("```json", "")
-    text = text.replace("```", "")
-    text = text.strip()
+        text = response.text
 
-    return json.loads(text)
-def generate_study_plan(subject):
+        text = text.replace("```json", "")
+        text = text.replace("```", "")
+        text = text.strip()
+
+        return json.loads(text)
+    except Exception as e:
+        print("Gemini Error:", e)
+
+        return {
+            "plan": [
+                {
+                    "day": 1,
+                    "topic": "Fallback Study Plan",
+                    "goal": "Gemini quota exceeded"
+                }
+            ]
+        }
+def generate_study_plan(content,days_left):
 
     prompt = f"""
-    Create a detailed 7-day study plan for {subject}.
+    Create a detailed {days_left}-day study plan based on the following study material.
+
+    Study Material:
+    {content[:5000]}
+
+    Rules:
+    - Return exactly {days_left} days.
+    - Focus only on topics present in the material.
+    - Start from fundamentals.
+    - Gradually move to advanced topics.
+    - Reserve the last day for revision and mock tests.
+    - Include a goal for each day.
 
     Return ONLY valid JSON.
 
     {{
-      "plan":[
+    "plan":[
         {{
-          "day":1,
-          "topic":"..."
-          "goal":"..."
+        "day":1,
+        "topic":"...",
+        "goal":"..."
         }}
-      ]
+    ]
     }}
     """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
-    )
-
-    text = response.text
-    text = text.replace("```json", "")
-    text = text.replace("```", "")
-    text = text.strip()
-
     try:
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+
+        text = response.text
+        text = text.replace("```json", "")
+        text = text.replace("```", "")
+        text = text.strip()
+
         return json.loads(text)
+    
     except Exception as e:
-        print("Study Plan JSON Error:", e)
-        print(text)
-        return {"plan": []}
+        print("Gemini Error:", e)
+
+        return {
+            "plan": [
+                {
+                    "day": 1,
+                    "topic": "Fallback Study Plan",
+                    "goal": "Gemini quota exceeded"
+                }
+            ]
+        }

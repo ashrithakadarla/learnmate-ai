@@ -1,5 +1,8 @@
 from flask import Blueprint, request, jsonify
 from PyPDF2 import PdfReader
+from services.ai_service import generate_study_plan
+
+from datetime import date, datetime
 import os
 
 upload_bp = Blueprint("upload", __name__)
@@ -14,7 +17,12 @@ def upload_pdf():
 
     file = request.files["file"]
 
-    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+    exam_date = request.form.get("examDate")
+
+    filepath = os.path.join(
+        UPLOAD_FOLDER,
+        file.filename
+    )
 
     file.save(filepath)
 
@@ -23,11 +31,31 @@ def upload_pdf():
     text = ""
 
     for page in reader.pages:
-        page_text = page.extract_text()
-        if page_text:
-            text += page_text + "\n"
+        extracted = page.extract_text()
+
+        if extracted:
+            text += extracted + "\n"
+
+    today = date.today()
+
+    exam = datetime.strptime(
+        exam_date,
+        "%Y-%m-%d"
+    ).date()
+
+    days_left = (exam - today).days
+
+    if days_left <= 0:
+        days_left = 1
+
+    plan = generate_study_plan(
+        text,
+        days_left
+    )
 
     return jsonify({
         "filename": file.filename,
-        "content": text[:3000]
+        "content": text[:3000],
+        "plan": plan,
+        "daysLeft": days_left
     })

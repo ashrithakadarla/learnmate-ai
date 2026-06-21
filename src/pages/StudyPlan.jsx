@@ -10,41 +10,64 @@ function StudyPlan() {
   const [plan, setPlan] = useState(null)
   const [error, setError] = useState('')
   const [pdfFile, setPdfFile] = useState(null)
-const [pdfContent, setPdfContent] = useState("")
-
+  const [pdfContent, setPdfContent] = useState("")
+  const [loading, setLoading] = useState(false)
+  const daysLeft = examDate
+      ? Math.ceil(
+          (new Date(examDate) - new Date()) /
+          (1000 * 60 * 60 * 24)
+        )
+      : 0
   async function handleSubmit(event) {
     event.preventDefault()
+    setLoading(true)
     setError('')
-
-    if (pdfFile) {
-      const pdfResult = await uploadPdf()    
-      console.log(pdfResult)
-      setPdfContent(pdfResult.content)
+    
+    try{
+      if (pdfFile) {
+        const pdfResult = await uploadPdf()
+      
+        setPdfContent(pdfResult.content)
+      
+        setPlan({
+          ...pdfResult.plan,
+          subject,
+          examDate,
+          hoursPerDay,
+          daysLeft: pdfResult.daysLeft
+        })
+        return
+      }  
+  
+      const result = await fetchStudyPlan({
+        subject,
+        examDate,
+        hoursPerDay: Number(hoursPerDay),
+        daysLeft
+      })
+  
+      if (!result.success) {
+        setPlan(null)
+        setError(result.error)
+        return
+      }
+  
+      setPlan(result.plan)
     }
-
-    const result = await fetchStudyPlan({
-      subject,
-      examDate,
-      hoursPerDay: Number(hoursPerDay),
-    })
-
-    if (!result.success) {
-      setPlan(null)
-      setError(result.error)
-      return
+    finally{
+      setLoading(false)
     }
-
-    setPlan(result.plan)
   }
 
   async function uploadPdf() {
 
     if (!pdfFile) return null
-  
+
     const formData = new FormData()
-  
+
     formData.append("file", pdfFile)
-  
+    formData.append("examDate", examDate)
+
     const response = await fetch(
       "http://127.0.0.1:5000/upload-pdf",
       {
@@ -52,7 +75,6 @@ const [pdfContent, setPdfContent] = useState("")
         body: formData
       }
     )
-  
     return await response.json()
   }
 
@@ -126,8 +148,8 @@ const [pdfContent, setPdfContent] = useState("")
                 </p>
               )}
 
-              <button type="submit" className="study-plan__button">
-                Generate Plan
+              <button type="submit" className="study-plan__button" disabled={loading}>
+                {loading ? "Generating..." : "Generate Plan"}
               </button>
             </form>
           </section>
@@ -151,24 +173,28 @@ const [pdfContent, setPdfContent] = useState("")
                 📅 Personalized Study Plan
               </h2>
               <p className="study-plan__result-meta">
-                <span>{plan.subject}</span>
-                <span>Exam: {plan.examDate}</span>
-                <span>{plan.hoursPerDay} hrs/day</span>
-                <span>{plan.daysRemaining} days left</span>
-                <span>{plan.totalStudyHours} total hrs</span>
+                <span>{subject}</span>
+                <span>Exam: {examDate}</span>
+                <span>{hoursPerDay} hrs/day</span>
+                <span>{daysLeft} days left</span>
               </p>
               <ol className="study-plan__days">
-                {plan.days.map((day) => (
-                  <li key={day.dayNumber} className="study-plan__day">
+                {plan.plan?.map((day,index) => (
+                  <li key={index} className="study-plan__day">
                     <span className="study-plan__day-number">
-                      {day.dayNumber}
+                      {day.day}
                     </span>
+                
                     <div className="study-plan__day-content">
-                      <span className="study-plan__day-label">{day.label}</span>
-                      <span className="study-plan__day-text">{day.topic}</span>
-                      <span className="study-plan__day-hours">
-                        {day.hours} {day.hours === 1 ? 'hour' : 'hours'} planned
+                      <span className="study-plan__day-text">
+                        {day.topic}
                       </span>
+                  
+                      {day.goal && (
+                        <span className="study-plan__day-label">
+                          🎯 {day.goal}
+                        </span>
+                      )}
                     </div>
                   </li>
                 ))}
