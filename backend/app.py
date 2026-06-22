@@ -6,6 +6,8 @@ from routes.study_plan import study_plan_bp
 
 from services.ai_service import generate_quiz
 from routes.upload import upload_bp
+from routes.summary import summary_bp
+from routes.topic_quiz import topic_quiz_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -13,6 +15,8 @@ CORS(app)
 app.register_blueprint(quiz_bp)
 app.register_blueprint(study_plan_bp)
 app.register_blueprint(upload_bp)
+app.register_blueprint(summary_bp)
+app.register_blueprint(topic_quiz_bp)
 
 @app.route("/")
 def home():
