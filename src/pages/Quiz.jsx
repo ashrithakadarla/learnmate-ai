@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import "./Quiz.css";
+import ErrorMessage from "../components/ErrorMessage";
 
 function Quiz() {
   const [questions, setQuestions] = useState([]);
@@ -8,31 +9,56 @@ function Quiz() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [score, setScore] = useState(null);
   const [weakAreas, setWeakAreas] = useState([]);
-  const location = useLocation();
-  const subject = location.state?.subject || "General";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const location = useLocation();
+  console.log("QUIZ PAGE STATE:", location.state);
+  const subject = location.state?.subject || "General";
+  const topic = location.state?.topic;
+  const pdfContent = location.state?.pdfContent;
 
   const handleGenerateQuiz = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `http://127.0.0.1:5000/generate-quiz?subject=${subject}`
-      );
+  
+      let response;
+  
+      if (topic && pdfContent) {
+  
+        response = await fetch(
+          `http://127.0.0.1:5000/generate-topic-quiz?topic=${encodeURIComponent(topic)}&content=${encodeURIComponent(pdfContent)}`
+        );
+  
+      } else {
+  
+        response = await fetch(
+          `http://127.0.0.1:5000/generate-quiz?subject=${subject}`
+        );
+  
+      }
   
       const data = await response.json();
-  
-      setQuestions(data.questions);
+      console.log(data);
+
+      if (!data.questions) {
+        setError("AI quota reached. Please wait a few minutes and try again.");
+        return;
+      }
+      setQuestions(data.questions || []);
       setCurrentQuestion(0);
       setScore(null);
       setWeakAreas([]);
       setSelectedAnswers({});
-    } catch(error){
+  
+    } catch (error) {
       console.error(error);
       setError("Failed to generate quiz.");
-    }
-    finally{
+  
+    } finally {
+  
       setLoading(false);
+  
     }
   };
   const handleSubmit = () => {
@@ -55,10 +81,11 @@ function Quiz() {
     setScore(marks);
     setWeakAreas(wrong);
   };
-
+  console.log("TOPIC:", topic)
+  console.log("PDF CONTENT:", pdfContent)
   return (
     <div className="quiz-container">
-      <h1 className="quiz-title">🧠 {subject} Quiz</h1>
+      <h1 className="quiz-title">🧠 {topic || subject} Quiz</h1>
   
       <button
         className="quiz-button"
@@ -152,7 +179,7 @@ function Quiz() {
               onClick={handleGenerateQuiz} >
               Restart Quiz
             </button>
-            {error && <p>{error}</p>}
+            <ErrorMessage message={error} />
       </div>
         )}
       </div>

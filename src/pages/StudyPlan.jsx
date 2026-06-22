@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { fetchStudyPlan } from '../services/studyPlanService'
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import './StudyPlan.css'
+import ErrorMessage from "../components/ErrorMessage";
 
 function StudyPlan() {
   const [subject, setSubject] = useState('')
@@ -12,12 +13,18 @@ function StudyPlan() {
   const [pdfFile, setPdfFile] = useState(null)
   const [pdfContent, setPdfContent] = useState("")
   const [loading, setLoading] = useState(false)
+  const [summary, setSummary] = useState(null)
+  const [loadingSummary, setLoadingSummary] = useState(false)
+  const [completedDays, setCompletedDays] = useState([])
   const daysLeft = examDate
       ? Math.ceil(
           (new Date(examDate) - new Date()) /
           (1000 * 60 * 60 * 24)
         )
       : 0
+  const navigate = useNavigate()
+
+
   async function handleSubmit(event) {
     event.preventDefault()
     setLoading(true)
@@ -77,7 +84,57 @@ function StudyPlan() {
     )
     return await response.json()
   }
+  
+  async function openSummary(day) {
 
+    try {
+  
+      const response = await fetch(
+        `http://127.0.0.1:5000/generate-summary?topic=${encodeURIComponent(day.topic)}&content=${encodeURIComponent(pdfContent)}`
+      )
+  
+      const summaryData = await response.json()
+
+      navigate("/summary", {
+        state: {
+          topic: day.topic,
+          summaryData: summaryData,
+          pdfContent
+        }
+      })
+  
+    } catch(error) {
+      console.error(error)
+    }
+  }
+  function toggleDayComplete(dayNumber) {
+
+    if (completedDays.includes(dayNumber)) {
+  
+      setCompletedDays(
+        completedDays.filter(day => day !== dayNumber)
+      )
+  
+    } else {
+  
+      setCompletedDays([
+        ...completedDays,
+        dayNumber
+      ])
+  
+    }
+  }
+  const totalDays =
+    plan?.days?.length ||
+    plan?.plan?.length ||
+    0
+
+  const progress =
+    totalDays > 0
+      ? Math.round(
+          (completedDays.length / totalDays) * 100
+        )
+      : 0
   return (
     <div className="study-plan">
       <div className="study-plan__container">
@@ -142,11 +199,7 @@ function StudyPlan() {
                 />
               </div>
 
-              {error && (
-                <p className="study-plan__error" role="alert">
-                  {error}
-                </p>
-              )}
+              <ErrorMessage message={error} />
 
               <button type="submit" className="study-plan__button" disabled={loading}>
                 {loading ? "Generating..." : "Generate Plan"}
@@ -178,9 +231,31 @@ function StudyPlan() {
                 <span>{hoursPerDay} hrs/day</span>
                 <span>{daysLeft} days left</span>
               </p>
+              <div className="progress-container">
+                <div className="progress-header">
+                  <span>Progress</span>
+                  <span>{progress}%</span>
+                </div>
+
+                <div className="progress-bar">
+
+                  <div
+                    className="progress-fill"
+                    style={{
+                      width: `${progress}%`
+                    }}
+                  />
+                </div>
+              </div>
+
               <ol className="study-plan__days">
                 {plan.plan?.map((day,index) => (
-                  <li key={index} className="study-plan__day">
+                  <li
+                    key={index}
+                    className="study-plan__day"
+                    onClick={() => openSummary(day)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <span className="study-plan__day-number">
                       {day.day}
                     </span>
@@ -195,10 +270,45 @@ function StudyPlan() {
                           🎯 {day.goal}
                         </span>
                       )}
+                      <button
+                        className="complete-btn"
+                        onClick={() => toggleDayComplete(day.day)}
+                      >
+                        {completedDays.includes(day.day)
+                          ? "✅ Completed"
+                          : "Mark Complete"}
+                      </button>
                     </div>
                   </li>
                 ))}
               </ol>
+              {loadingSummary && (
+                <p>Generating summary...</p>
+              )}
+
+              {summary && (
+                <div className="study-plan__card">
+                  <h3>📖 Summary</h3>
+
+                  <p>{summary.summary}</p>
+
+                  <h4>💡 Key Points</h4>
+
+                  <ul>
+                    {summary.key_points.map((point, index) => (
+                      <li key={index}>{point}</li>
+                    ))}
+                  </ul>
+
+                  <h4>🎯 Important Concepts</h4>
+
+                  <ul>
+                    {summary.important_concepts.map((concept, index) => (
+                      <li key={index}>{concept}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <Link to="/quiz" state={{
                 subject:plan.subject

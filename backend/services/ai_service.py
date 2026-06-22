@@ -114,3 +114,104 @@ def generate_study_plan(content,days_left):
                 }
             ]
         }
+
+def generate_summary(topic, content):
+
+    prompt = f"""
+    Topic:
+    {topic}
+
+    Study Material:
+    {content}
+
+    Create:
+
+    1. Short Summary
+    2. Key Points
+    3. Important Concepts
+
+    Return ONLY valid JSON.
+
+    {{
+      "summary":"...",
+      "key_points":[
+        "...",
+        "..."
+      ],
+      "important_concepts":[
+        "...",
+        "..."
+      ]
+    }}
+    """
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+
+        text = response.text
+        text = text.replace("```json", "")
+        text = text.replace("```", "")
+        text = text.strip()
+
+        return json.loads(text)
+    except Exception as e:
+        print("Gemini Error:", e)
+
+        return {
+            "summary": "Unable to generate summary right now.",
+            "key_points": [],
+            "important_concepts": []
+        }
+
+def generate_topic_quiz(topic, content):
+
+    prompt = f"""
+    Create 5 multiple-choice questions from this topic.
+
+    Topic:
+    {topic}
+
+    Study Material:
+    {content}
+
+    Return ONLY valid JSON.
+
+    {{
+      "questions":[
+        {{
+          "question":"...",
+          "options":[
+            "A) ...",
+            "B) ...",
+            "C) ...",
+            "D) ..."
+          ],
+          "answer":"A) ...",
+          "explanation":"..."
+        }}
+      ]
+    }}
+    """
+
+    try:
+        print("TOPIC QUIZ ROUTE HIT")
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+
+        text = response.text
+        text = text.replace("```json", "")
+        text = text.replace("```", "")
+        text = text.strip()
+
+        return json.loads(text)
+
+    except Exception as e:
+        print("Quiz Error:", e)
+
+        return {
+            "questions": []
+        }
