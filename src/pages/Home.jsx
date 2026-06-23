@@ -87,7 +87,7 @@ useEffect(() => {
           </div>
           <div className="hero-card hero-card--front">
             <span className="hero-card__label">Today&apos;s focus</span>
-            <p>Cell biology · Chapter 4</p>
+            <p>Java · Chapter 4</p>
             <div className="hero-card__progress">
               <span style={{ width: '68%' }} />
             </div>
