@@ -162,19 +162,19 @@ GEMINI_API_KEY=your_gemini_api_key
 ## 📸 Screenshots
 
 ### Home Page
-(Add Screenshot)
+![Home](https://github.com/ashrithakadarla/learnmate-ai/blob/main/learnmate-ai.png)
 
 ### Study Plan
-(Add Screenshot)
+![StudyPlan](https://github.com/ashrithakadarla/learnmate-ai/blob/main/StudyPlan.png)
 
 ### Summary Page
-(Add Screenshot)
+![Summary](https://github.com/ashrithakadarla/learnmate-ai/blob/main/Summary.png)
 
 ### Quiz Page
-(Add Screenshot)
+![Quiz](https://github.com/ashrithakadarla/learnmate-ai/blob/main/Quiz.png)
 
 ### Progress Tracking
-(Add Screenshot)
+![Progress](https://github.com/ashrithakadarla/learnmate-ai/blob/main/Progress.png)
 
 ---
 
